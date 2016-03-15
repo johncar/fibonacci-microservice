@@ -77,8 +77,8 @@ def get_lr_customers():
     intersects the 2 then returns the results
     :return:
     """
-    sf = Salesforce(username='opsautomation@alertlogic.com', password='&5Pb@1mUPh6J',
-                    security_token='r6owfaDwmeupDT3q8nklxsIrx')
+    sf = Salesforce(username='opsautomation@alertlogic.com', password='',
+                    security_token='')
     lrCustomers = sf.query_all(
             "SELECT id, Customer_ID__c, Name FROM Account WHERE Customer_ID__c != '' AND Active_LR_Customer__c = true ")
     customers = {}
