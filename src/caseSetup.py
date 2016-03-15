@@ -1,8 +1,4 @@
-import sys
-
-sys.path.insert(0, '/Users/jtarver/al-aamp-base/sources/allib/lib')
 from allib import db
-
 from allib.api import alrta
 from simple_salesforce import Salesforce
 from sets import Set
