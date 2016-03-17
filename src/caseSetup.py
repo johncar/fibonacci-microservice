@@ -1,10 +1,35 @@
+import sys
+
+sys.path.insert(0, '/Users/jtarver/al-aamp-base/sources/allib/lib')
 from allib import db
+
 from allib.api import alrta
 from simple_salesforce import Salesforce
 from sets import Set
-import json
-import aggregation
+import json, logging
+
 from urlparse import parse_qs
+from ConfigParser import ConfigParser
+
+parser = ConfigParser()
+parser.read('config.ini')
+
+
+################################################################
+#
+# functions for case generation setup
+#
+# author: Jason Tarver
+################################################################
+
+
+def triggerr():
+    return "DONE"
+
+def trigger(cids_to_run=[], cids_exclude=[]):
+    for _customer in setup(cids_to_run,cids_exclude):
+        for returnd in _customer:
+            print("got customer " + returnd[0]['Name'] + " and " + str(len(returnd[1])) + " rules")
 
 
 def setup(cids_to_run=[], cids_exclude=[]):
@@ -13,8 +38,9 @@ def setup(cids_to_run=[], cids_exclude=[]):
 
     :param cids_to_run: int[]
     :param cids_exclude: int[]
+    :return: a genertor that has a generator for each customer and a generator for each customers rule
     """
-    activeLrCustomers = get_lr_customers()
+    activeLrCustomers = _get_lr_customers()
     if not cids_to_run:
         customers = activeLrCustomers
     else:
@@ -28,40 +54,40 @@ def setup(cids_to_run=[], cids_exclude=[]):
             # remove customers that we exclude
             if cid in customers: del customers[cid]
 
-    process(customers)
+    return _process(customers)
 
 
-def process(customers):
+def _process(customers):
     """
     step 3 get rules
 
     :type customers: object
     """
-    global_rules = get_global_rules()
+    global_rules = _get_global_rules()
 
-    for customer in customers:
-        process_customer(customer, global_rules)
+    for customer in customers.itervalues():
+        yield _process_customer(customer, global_rules)
 
 
-def process_customer(customer, global_rules):
+def _process_customer(customer, global_rules):
     """
     step 4 get customer rules
 
     :param customer:
     :param global_rules:
     """
-    customer_rules = get_customer_rules(customer['cid'])
+    customer_rules = _get_customer_rules(customer['cid'])
     # intersect with global rules
     rules = []
     for customer_rule in customer_rules:
         if customer_rule['name'] in global_rules:
             customer_rule['root_rule'] = global_rules[customer_rule['name']]
             rules.append(customer_rule)
-    aggregate(customer, rules)
+    yield (customer, rules)
     # send to aggregation
 
 
-def get_customer_rules(cid):
+def _get_customer_rules(cid):
     """
     gets the customer rules from alrta
 
@@ -71,16 +97,17 @@ def get_customer_rules(cid):
     return [json.loads(x) for x in alrta.get_rules(cid)]
 
 
-def get_lr_customers():
+def _get_lr_customers():
     """
     gets the customers from salesforce, then the case tables from alpha
     intersects the 2 then returns the results
     :return:
     """
-    sf = Salesforce(username='opsautomation@alertlogic.com', password='',
-                    security_token='')
+    logging.info("Getting Log Review Customers")
+    sf = Salesforce(username=parser.get('config', 'sfUser'), password=parser.get('config', 'sfPass'),
+                    security_token=parser.get('config', 'sfKey'))
     lrCustomers = sf.query_all(
-            "SELECT id, Customer_ID__c, Name FROM Account WHERE Customer_ID__c != '' AND Active_LR_Customer__c = true ")
+        "SELECT id, Customer_ID__c, Name FROM Account WHERE Customer_ID__c != '' AND Active_LR_Customer__c = true ")
     customers = {}
     for customer in lrCustomers['records']:
         # i dont want to type Customer_ID__c all the time
@@ -94,14 +121,18 @@ def get_lr_customers():
     # this helps filter customers that dont belong in the datacenter
     customersFiltered = {}
     for table in alphaTables:
-        cid = int(table['table_name'].replace('_case_tbl', ''));
-        if cid in customers:
-            customersFiltered[cid] = customers[cid]
+        try:
+            cid = int(table['table_name'].replace('_case_tbl', ''));
+            if cid in customers:
+                customersFiltered[cid] = customers[cid]
+        except:
+            pass
 
+    logging.info("Got " + str(len(customersFiltered)) + " customers")
     return customersFiltered
 
 
-def get_global_rules():
+def _get_global_rules():
     """
     gets the root rules from alpha
     :return:
@@ -119,12 +150,3 @@ def get_global_rules():
         rule['headers_simple_indexed'] = dict([(x.split(':')[0], ind) for ind, x in enumerate(headers)])
 
     return dict([(d['parse_rule']['name'], d) for d in global_rules])
-
-
-def aggregate(customer, rules):
-    """
-    sends the customer and rules to the next step
-    :param customer:
-    :param rules:
-    """
-    aggregation.aggregation(customer, rules)
