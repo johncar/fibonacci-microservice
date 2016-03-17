@@ -22,10 +22,6 @@ parser.read('config.ini')
 # author: Jason Tarver
 ################################################################
 
-
-def triggerr():
-    return "DONE"
-
 def trigger(cids_to_run=[], cids_exclude=[]):
     for _customer in setup(cids_to_run,cids_exclude):
         for returnd in _customer:
