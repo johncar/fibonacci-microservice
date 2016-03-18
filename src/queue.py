@@ -1,33 +1,35 @@
 import uuid
 import multiprocessing
 from celery import Celery
+from ConfigParser import ConfigParser
 
 # import the core functions that defines the business logic
-from core import fibonacci
+import caseSetup
 
 # app = celery.Celery()
 # app.config_from_object('celery_app.celeryconfig')
 
-service_name = 'MathService'
-celery = Celery(service_name, backend='rpc://', broker='amqp://guest@localhost//')
+parser = ConfigParser()
+parser.read('config.ini')
+
+service_name = 'SetupService'
+celery = Celery(service_name, backend='rpc://', broker='amqp://guest@%s//' % parser.get('config', 'rmqhost'))
 
 
 @celery.task
 def start_task(self, name, args, kwargs):
-
     # get the named task
     task = self.tasks.get(name)
 
     # execute it in a
-    return lambda: task(*args, **kwargs)
+    return task(*args, **kwargs)
 
 
 class QueueManager(object):
-
     def __init__(self):
         self.results = {}
         self.tasks = {
-            'fibonacci': fibonacci
+            'trigger': caseSetup.trigger
             # add other tasks here
         }
 

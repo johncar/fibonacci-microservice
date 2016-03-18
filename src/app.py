@@ -17,18 +17,10 @@ def get_tasks():
     return jsonify({'tasks': queue_manager.get_tasks()})
 
 
-@app.route('/fibonacci', methods=['POST'])
+@app.route('/trigger', methods=['POST'])
 def start_task():
 
-    if not request.json or 'number' not in request.json:
-        abort(400)
-
-    if type(request.json['number']) != unicode:
-        abort(400)
-
-    n = int(request.json['number'])
-
-    task_id = queue_manager.start_task("fibonacci", n)
+    task_id = queue_manager.start_task("trigger")
 
     return jsonify({'task': task_id})
 
