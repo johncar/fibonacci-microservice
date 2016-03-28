@@ -1,5 +1,8 @@
-Fibonacci - Example of Microservice with Flask + Celery + RabbitMQ as broker 
+Fibonacci Microservice
 ==============================
+
+This is an example of microservice made in python with Flask + Celery + RabbitMQ
+
 
 Dependencies:
 
