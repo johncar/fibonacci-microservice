@@ -1,4 +1,4 @@
-al-soc-lr-case-generator-setup
+Fibonacci - Example of Microservice with Flask + Celery + RabbitMQ as broker 
 ==============================
 
 Dependencies:
