@@ -1,4 +1,4 @@
-from src import core
+from app import core
 from unittest import TestCase
 
 class core_test(TestCase):

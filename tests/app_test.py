@@ -1,5 +1,5 @@
 from flask import Response
-from src import app
+from app import app
 from unittest import TestCase
 import json
 
