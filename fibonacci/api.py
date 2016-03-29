@@ -1,4 +1,4 @@
-import app
+import fibonacci
 from flask import jsonify, request, abort, make_response, Blueprint
 
 
@@ -14,7 +14,7 @@ def task_list():
 
 @main.route('/tasks', methods=['GET'])
 def get_tasks():
-    return jsonify({'tasks': app.queue_manager.get_tasks()})
+    return jsonify({'tasks': fibonacci.queue_manager.get_tasks()})
 
 
 @main.route('/fibonacci', methods=['POST'])
@@ -28,14 +28,14 @@ def start_task():
     if n < 0:
         abort(404)
 
-    task_id = app.queue_manager.start_task("fibonacci", n)
+    task_id = fibonacci.queue_manager.start_task("fibonacci", n)
 
     return jsonify({'task': task_id})
 
 
 @main.route('/task/<string:task_id>')
 def task_result(task_id):
-    result = app.queue_manager.get_result(task_id)
+    result = fibonacci.queue_manager.get_result(task_id)
 
     return jsonify({'task': task_id, 'result': result})
 

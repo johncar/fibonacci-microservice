@@ -1,8 +1,10 @@
 import os
 import multiprocessing
 
-from app import conf
-from app import celery
+from config import config
+from fibonacci import celery
+
+conf = config[os.getenv('CONFIG_NAME') or 'default']
 
 
 class WorkerProcess(multiprocessing.Process):

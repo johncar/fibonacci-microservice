@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     # Application name:
-    name="Fibonacci Micro-service",
+    name="Fibonacci-Microservice",
 
     # Version number (initial):
     version="0.1.0",

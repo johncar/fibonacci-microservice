@@ -1,8 +1,8 @@
+import fibonacci
 import uuid
 
 # import the core functions that defines the business logic
-from app.core import fibonacci
-import app
+from core import fibonacci
 
 
 class QueueManager(object):
@@ -18,7 +18,7 @@ class QueueManager(object):
         task_id = uuid.uuid4().hex
 
         # execute the task as non-blocking Event
-        event = app.start_celery_task.delay(self.available_tasks, name, args, kwargs)
+        event = fibonacci.start_celery_task.delay(self.available_tasks, name, args, kwargs)
 
         # store the Event and return the task's unique id to the caller
         self.results[task_id] = event

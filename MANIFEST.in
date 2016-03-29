@@ -1,2 +1,2 @@
-recursive-include app/bin *
-# recursive-include tests/ *
+# Include the license file
+include LICENSE.txt
