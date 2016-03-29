@@ -4,8 +4,11 @@ from flask import Flask
 from celery import Celery
 
 from config import config, Config
+
 from queue import QueueManager
 from api import main
+from app.worker import WorkerProcess
+from socket import error as socket_error
 
 conf = config[os.getenv('CONFIG_NAME') or 'default']
 
@@ -27,3 +30,15 @@ app = Flask(__name__)
 app.config['DEBUG'] = True
 app.config.from_object("app.config")
 app.register_blueprint(main)
+
+
+def main():
+    try:
+        WorkerProcess.start_celery()
+        app.run(host=conf.SERVER_NAME, port=conf.SERVER_PORT, debug=conf.DEBUG)
+
+    except socket_error, msg:
+        print "Caught exception socket.error : %s" % msg
+
+    finally:
+        WorkerProcess.stop_celery()
